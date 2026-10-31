@@ -64,8 +64,27 @@
 
     lastSync = now;
 
+    const reference = leader();
+
     loaded().forEach((v) => {
-      if (v !== leader() && Math.abs(v.currentTime - time) > .18) v.currentTime = time;
+      if (v === reference) return;
+
+      // Se o vídeo já terminou nesse ponto, mantém parado.
+      if (Number.isFinite(v.duration) && time >= v.duration) {
+        v.pause();
+        return;
+      }
+
+      // Se estamos dentro da duração, sincroniza normalmente.
+      if (Math.abs(v.currentTime - time) > .18) {
+        v.currentTime = time;
+      }
+
+      // Se o vídeo principal está reproduzindo,
+      // garante que o secundário também esteja.
+      if (!reference.paused && v.paused) {
+        v.play().catch(() => {});
+      }
     });
   };
 
@@ -138,7 +157,11 @@
 
     video.addEventListener('play', setPausedUI);
     video.addEventListener('pause', setPausedUI);
-    video.addEventListener('ended', pauseAll);
+    
+    video.addEventListener('ended', () => {
+      video.pause();
+      setPausedUI();
+    });
 
     video.addEventListener('seeking', () => {
       if (video === leader()) align(video.currentTime, true);
