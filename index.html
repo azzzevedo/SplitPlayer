@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07121f" />
+    <title>Split Player</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">PLAYER LOCAL</p>
+          <h1>Split Player</h1>
+        </div>
+      </header>
+
+      <section class="player-card" aria-label="Player de vídeo dividido">
+        <div class="split-stage controls-visible" id="stage">
+          <section class="video-pane pane-left" id="leftPane" aria-label="Vídeo esquerdo">
+            <video id="leftVideo" playsinline preload="metadata"></video>
+
+            <div class="empty-state" id="leftEmpty">
+              <span>←</span>
+              <strong>Vídeo esquerdo</strong>
+              <small>Escolha um arquivo abaixo</small>
+            </div>
+          </section>
+
+          <div
+            class="splitter"
+            id="splitter"
+            role="separator"
+            aria-label="Ajustar divisão"
+            aria-orientation="vertical"
+            aria-valuemin="15"
+            aria-valuemax="85"
+            aria-valuenow="50"
+            tabindex="0">
+            <span></span>
+          </div>
+
+          <section class="video-pane pane-right" id="rightPane" aria-label="Vídeo direito">
+            <video id="rightVideo" playsinline preload="metadata"></video>
+
+            <div class="empty-state" id="rightEmpty">
+              <span>→</span>
+              <strong>Vídeo direito</strong>
+              <small>Escolha um arquivo abaixo</small>
+            </div>
+          </section>
+
+          <div class="control-bar" id="controls">
+            <button class="control-button play-button" id="playButton" type="button" aria-label="Reproduzir">
+              <span class="play-icon"></span>
+            </button>
+
+            <button class="control-button skip-button" id="backButton" type="button" aria-label="Voltar 5 segundos">
+              ↶<small>5</small>
+            </button>
+
+            <button class="control-button skip-button" id="forwardButton" type="button" aria-label="Avançar 5 segundos">
+              ↷<small>5</small>
+            </button>
+
+            <div class="time-display">
+              <span id="currentTime">0:00</span>
+              <span class="time-separator">/</span>
+              <span id="duration">0:00</span>
+            </div>
+
+            <label class="progress-wrap" aria-label="Posição do vídeo">
+              <input id="progress" type="range" min="0" max="1000" value="0" step="1" />
+            </label>
+
+            <button class="control-button mute-button" id="muteButton" type="button" aria-label="Ativar áudio">🔇</button>
+
+            <label class="volume-wrap" aria-label="Volume">
+              <input id="volume" type="range" min="0" max="1" value="0.8" step="0.05" />
+            </label>
+
+            <button class="control-button fullscreen-button" id="fullscreenButton" type="button" aria-label="Tela cheia">⛶</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings" aria-label="Configurações dos vídeos">
+        <article class="source-card">
+          <div class="source-heading">
+            <span class="dot left-dot"></span>
+            <h2>Esquerda</h2>
+          </div>
+
+          <label class="file-picker" for="leftFile">
+            <span>Selecionar vídeo</span><input id="leftFile" type="file" accept="video/*" />
+          </label>
+
+          <p class="file-name" id="leftFileName">Nenhum arquivo selecionado</p>
+
+          <label class="fit-control">
+            Enquadramento
+            <select id="leftFit">
+              <option value="contain">Manter proporção</option>
+              <option value="cover">Cortar para preencher</option>
+              <option value="fill">Esticar</option>
+            </select>
+          </label>
+        </article>
+
+        <article class="source-card">
+          <div class="source-heading">
+            <span class="dot right-dot"></span>
+            <h2>Direita</h2>
+          </div>
+
+          <label class="file-picker" for="rightFile">
+            <span>Selecionar vídeo</span><input id="rightFile" type="file" accept="video/*" />
+          </label>
+
+          <p class="file-name" id="rightFileName">Nenhum arquivo selecionado</p>
+
+          <label class="fit-control">
+            Enquadramento
+            <select id="rightFit">
+              <option value="contain">Manter proporção</option>
+              <option value="cover">Cortar para preencher</option>
+              <option value="fill">Esticar</option>
+            </select>
+          </label>
+        </article>
+      </section>
+
+      <p class="hint">
+        Atalhos: <kbd>Espaço</kbd> reproduzir/pausar · <kbd>←</kbd><kbd>→</kbd> voltar/avançar 5 s · <kbd>F</kbd> tela cheia
+      </p>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
