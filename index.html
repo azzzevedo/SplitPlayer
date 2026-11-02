@@ -22,6 +22,11 @@
           <section class="video-pane pane-left" id="leftPane" aria-label="Vídeo esquerdo">
             <video id="leftVideo" playsinline preload="metadata"></video>
 
+            <label class="pane-volume top-volume left-volume" aria-label="Volume do vídeo esquerdo">
+              <span aria-hidden="true">E</span>
+              <input id="leftVolume" type="range" min="0" max="1" value="1" step="0.05" />
+            </label>
+
             <div class="empty-state" id="leftEmpty">
               <span>←</span>
               <strong>Vídeo esquerdo</strong>
@@ -44,6 +49,11 @@
 
           <section class="video-pane pane-right" id="rightPane" aria-label="Vídeo direito">
             <video id="rightVideo" playsinline preload="metadata"></video>
+
+            <label class="pane-volume top-volume right-volume" aria-label="Volume do vídeo direito">
+              <input id="rightVolume" type="range" min="0" max="1" value="1" step="0.05" />
+              <span aria-hidden="true">D</span>
+            </label>
 
             <div class="empty-state" id="rightEmpty">
               <span>→</span>
@@ -133,7 +143,7 @@
       </section>
 
       <p class="hint">
-        Atalhos: <kbd>Espaço</kbd> reproduzir/pausar · <kbd>←</kbd><kbd>→</kbd> voltar/avançar 5 s · <kbd>F</kbd> tela cheia
+        Atalhos: <kbd>Espaço</kbd> reproduzir/pausar · <kbd>←</kbd><kbd>→</kbd> voltar/avançar 5 s · <kbd>↑</kbd><kbd>↓</kbd> volume geral · <kbd>F</kbd> tela cheia
       </p>
     </main>
 
