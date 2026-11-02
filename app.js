@@ -3,6 +3,7 @@
   const left = $('leftVideo'), right = $('rightVideo'), videos = [left, right];
   const stage = $('stage'), splitter = $('splitter'), progress = $('progress');
   const playButton = $('playButton'), muteButton = $('muteButton'), volume = $('volume');
+  const leftVolume = $('leftVolume'), rightVolume = $('rightVolume');
   const currentTime = $('currentTime'), duration = $('duration');
   const states = [
     { video:left, file:$('leftFile'), name:$('leftFileName'), empty:$('leftEmpty'), fit:$('leftFit'), url:null },
@@ -10,6 +11,19 @@
   ];
   let dragging = false, seeking = false, lastSync = 0, controlsTimer;
   const loaded = () => videos.filter((video) => video.src);
+  const volumeFor = (video) => Number(volume.value) * Number(video === left ? leftVolume.value : rightVolume.value);
+
+  function updateVolumes(unmute = false) {
+    loaded().forEach((video) => {
+      video.volume = volumeFor(video);
+
+      if (unmute) video.muted = false;
+    });
+
+    const master = Number(volume.value);
+
+    muteButton.textContent = master ? '🔊' : '🔇';
+  }
 
   function showControls() {
     stage.classList.add('controls-visible');
@@ -135,7 +149,7 @@
     state.name.textContent = file.name;
     state.empty.hidden = true;
     state.video.muted = true;
-    state.video.volume = Number(volume.value);
+    state.video.volume = volumeFor(state.video);
     state.video.addEventListener('loadedmetadata', updateTimeline, { once:true });
   }
 
@@ -201,14 +215,11 @@
   });
 
   volume.addEventListener('input', () => {
-    const value = Number(volume.value);
+    updateVolumes(true);
+  });
 
-    loaded().forEach((v) => {
-      v.volume = value;
-      v.muted = false;
-    });
-
-    muteButton.textContent = value ? '🔊' : '🔇';
+  [leftVolume, rightVolume].forEach((slider) => {
+    slider.addEventListener('input', () => updateVolumes(true));
   });
 
   muteButton.addEventListener('click', () => {
@@ -294,6 +305,16 @@
     if (event.key === 'ArrowRight') {
       event.preventDefault();
       seekBy(5);
+    }
+
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+
+      const next = Math.max(0, Math.min(1, Number(volume.value) + (event.key === 'ArrowUp' ? .05 : -.05)));
+
+      volume.value = String(next);
+
+      updateVolumes(true);
     }
 
     if (event.key.toLowerCase() === 'f') $('fullscreenButton').click();

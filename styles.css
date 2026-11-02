@@ -273,6 +273,44 @@ input[type="range"] {
   display: flex;
 }
 
+.pane-volume {
+  position: absolute;
+  z-index: 2;
+  align-items: center;
+  gap: 5px;
+  width: 94px;
+  color: #d9ebff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pane-volume input {
+  min-width: 0;
+}
+
+.right-volume {
+  right: 12px;
+}
+
+.left-volume {
+  left: 12px;
+}
+
+.top-volume {
+  top: 12px;
+  display: flex;
+  padding: 5px 7px;
+  border-radius: 4px;
+  background: #020812aa;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+
+.split-stage.controls-visible .top-volume,
+.top-volume:focus-within {
+  opacity: 1;
+}
+
 .mute-button {
   font-size: 16px;
 }
@@ -423,6 +461,11 @@ kbd {
 
   .volume-wrap {
     display: none;
+  }
+
+  .pane-volume {
+    display: flex;
+    width: 46px;
   }
 
   .control-bar {
