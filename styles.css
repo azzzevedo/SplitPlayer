@@ -273,6 +273,21 @@ input[type="range"] {
   display: flex;
 }
 
+.speed-wrap {
+  display: flex;
+}
+
+.speed-wrap select {
+  width: 58px;
+  padding: 4px;
+  border: 1px solid #54708b;
+  border-radius: 3px;
+  color: #fff;
+  background: #102033;
+  cursor: pointer;
+  font-size: 12px;
+}
+
 .pane-volume {
   position: absolute;
   z-index: 2;
@@ -461,6 +476,10 @@ kbd {
 
   .volume-wrap {
     display: none;
+  }
+
+  .speed-wrap select {
+    width: 52px;
   }
 
   .pane-volume {
