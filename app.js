@@ -3,6 +3,7 @@
   const left = $('leftVideo'), right = $('rightVideo'), videos = [left, right];
   const stage = $('stage'), splitter = $('splitter'), progress = $('progress');
   const playButton = $('playButton'), muteButton = $('muteButton'), volume = $('volume');
+  const playbackRate = $('playbackRate');
   const leftVolume = $('leftVolume'), rightVolume = $('rightVolume');
   const currentTime = $('currentTime'), duration = $('duration');
   const states = [
@@ -10,6 +11,7 @@
     { video:right, file:$('rightFile'), name:$('rightFileName'), empty:$('rightEmpty'), fit:$('rightFit'), url:null }
   ];
   let dragging = false, seeking = false, lastSync = 0, controlsTimer;
+  let spacePressed = false, spaceHoldActive = false, spaceHoldTimer, spaceWasPlaying = false;
   const loaded = () => videos.filter((video) => video.src);
   const volumeFor = (video) => Number(volume.value) * Number(video === left ? leftVolume.value : rightVolume.value);
 
@@ -52,7 +54,9 @@
   };
 
   const setPausedUI = () => {
-    const isPlaying = loaded().some((v) => !v.paused && !v.ended);
+    const isPlaying = loaded().some(
+      (v) => !v.paused && !v.ended
+    );
 
     stage.classList.toggle('paused', !isPlaying);
     playButton.classList.toggle('is-playing', isPlaying);
@@ -132,7 +136,9 @@
 
     if (!v.src) return;
 
-    const time = Math.max(0, Math.min(v.duration || Infinity, v.currentTime + seconds));
+    const time = Math.max(
+      0, Math.min(v.duration || Infinity, v.currentTime + seconds)
+    );
 
     loaded().forEach((clip) => { clip.currentTime = time; });
     updateTimeline();
@@ -150,11 +156,15 @@
     state.empty.hidden = true;
     state.video.muted = true;
     state.video.volume = volumeFor(state.video);
+    state.video.playbackRate = Number(playbackRate.value);
     state.video.addEventListener('loadedmetadata', updateTimeline, { once:true });
   }
 
   states.forEach((state) => {
-    state.file.addEventListener('change', () => loadFile(state, state.file.files[0]));
+    state.file.addEventListener(
+      'change',
+      () => loadFile(state, state.file.files[0])
+    );
 
     state.fit.addEventListener('change', () => {
       state.video.style.objectFit = state.fit.value;
@@ -184,7 +194,9 @@
 
   playButton.addEventListener(
     'click',
-    () => loaded().some((v) => !v.paused) ? pauseAll() : playAll()
+    () => loaded().some(
+      (v) => !v.paused
+    ) ? pauseAll() : playAll()
   );
 
   $('backButton').addEventListener('click', () => seekBy(-5));
@@ -222,6 +234,31 @@
     slider.addEventListener('input', () => updateVolumes(true));
   });
 
+  function setPlaybackRate(rate) {
+    playbackRate.value = String(rate);
+
+    loaded().forEach((video) => { video.playbackRate = rate; });
+  }
+
+  function adjustPlaybackRate(direction) {
+    const rates = Array.from(
+      playbackRate.options,
+      (option) => Number(option.value)
+    );
+    const currentIndex = rates.indexOf(Number(playbackRate.value));
+    const nextIndex = Math.max(
+      0,
+      Math.min(rates.length - 1, currentIndex + direction)
+    );
+
+    setPlaybackRate(rates[nextIndex]);
+  }
+
+  playbackRate.addEventListener(
+    'change',
+    () => setPlaybackRate(Number(playbackRate.value))
+  );
+
   muteButton.addEventListener('click', () => {
     const muted = !loaded().every((v) => v.muted);
 
@@ -232,13 +269,16 @@
 
   $('fullscreenButton').addEventListener('click', async () => {
     try {
-      if (document.fullscreenElement) await document.exitFullscreen(); else await $('stage').requestFullscreen();
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await $('stage').requestFullscreen();
     } catch {}
   });
 
   function setSplit(clientX) {
     const rect = stage.getBoundingClientRect();
-    const value = Math.max(15, Math.min(85, ((clientX - rect.left) / rect.width) * 100));
+    const value = Math.max(
+      15, Math.min(85, ((clientX - rect.left) / rect.width) * 100)
+    );
 
     stage.style.setProperty('--split', `${value}%`);
     splitter.setAttribute('aria-valuenow', Math.round(value));
@@ -279,6 +319,41 @@
   stage.addEventListener('pointerdown', showControls);
   stage.addEventListener('pointerenter', showControls);
 
+  function startSpaceHold() {
+    if (!spacePressed) return;
+
+    spaceHoldActive = true;
+    spaceWasPlaying = loaded().some(
+      (video) => !video.paused && !video.ended
+    );
+
+    setPlaybackRate(2);
+
+    if (!spaceWasPlaying) playAll();
+  }
+
+  function endSpaceHold() {
+    clearTimeout(spaceHoldTimer);
+
+    if (!spacePressed) return;
+
+    spacePressed = false;
+
+    if (!spaceHoldActive) {
+      loaded().some(
+        (video) => !video.paused
+      ) ? pauseAll() : playAll();
+
+      return;
+    }
+
+    spaceHoldActive = false;
+
+    setPlaybackRate(1);
+
+    if (!spaceWasPlaying) pauseAll();
+  }
+
   document.addEventListener('keydown', (event) => {
     showControls();
 
@@ -294,7 +369,13 @@
 
     if (event.code === 'Space') {
       event.preventDefault();
-      loaded().some((v) => !v.paused) ? pauseAll() : playAll();
+
+      if (spacePressed || event.repeat) return;
+
+      spacePressed = true;
+      spaceHoldTimer = setTimeout(startSpaceHold, 220);
+
+      return;
     }
 
     if (event.key === 'ArrowLeft') {
@@ -310,19 +391,37 @@
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
 
-      const next = Math.max(0, Math.min(1, Number(volume.value) + (event.key === 'ArrowUp' ? .05 : -.05)));
+      const next = Math.max(
+        0, Math.min(1, Number(volume.value) + (event.key === 'ArrowUp' ? .05 : -.05))
+      );
 
       volume.value = String(next);
 
       updateVolumes(true);
     }
 
+    if (event.shiftKey && ['Comma', 'Period'].includes(event.code)) {
+      event.preventDefault();
+      adjustPlaybackRate(event.code === 'Comma' ? -1 : 1);
+    }
+
     if (event.key.toLowerCase() === 'f') $('fullscreenButton').click();
   });
 
+  document.addEventListener('keyup', (event) => {
+    if (event.code !== 'Space' || !spacePressed) return;
+
+    event.preventDefault();
+    endSpaceHold();
+  });
+
+  window.addEventListener('blur', endSpaceHold);
+
   window.addEventListener(
     'beforeunload',
-    () => states.forEach((state) => state.url && URL.revokeObjectURL(state.url))
+    () => states.forEach(
+      (state) => state.url && URL.revokeObjectURL(state.url)
+    )
   );
 
   setPausedUI();
